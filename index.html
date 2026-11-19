@@ -1,0 +1,445 @@
+package com.nexus.launcher
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+private val Background = Color(0xFF080B16)
+private val SurfaceDark = Color(0xFF14192B)
+private val Blue = Color(0xFF159BFF)
+private val Purple = Color(0xFF984BFF)
+private val Green = Color(0xFF38E88D)
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            NexusLauncher()
+        }
+    }
+}
+
+@Composable
+fun NexusLauncher() {
+    var selectedTab by remember { mutableStateOf(0) }
+    var selectedVersion by remember { mutableStateOf("1.20.1") }
+    var showVersions by remember { mutableStateOf(false) }
+
+    val versions = listOf(
+        "1.21.1",
+        "1.20.1",
+        "1.19.4",
+        "1.18.2",
+        "1.16.5",
+        "1.12.2"
+    )
+
+    MaterialTheme {
+        Scaffold(
+            containerColor = Background,
+            bottomBar = {
+                NavigationBar(
+                    containerColor = SurfaceDark
+                ) {
+                    val tabs = listOf(
+                        "Início" to Icons.Default.Home,
+                        "Versões" to Icons.Default.Extension,
+                        "Ajustes" to Icons.Default.Settings
+                    )
+
+                    tabs.forEachIndexed { index, tab ->
+                        NavigationBarItem(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            icon = {
+                                Icon(tab.second, contentDescription = tab.first)
+                            },
+                            label = { Text(tab.first) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Green,
+                                selectedTextColor = Green,
+                                unselectedIconColor = Color.Gray,
+                                unselectedTextColor = Color.Gray,
+                                indicatorColor = Color(0xFF263B43)
+                            )
+                        )
+                    }
+                }
+            }
+        ) { padding ->
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Background)
+                    .padding(padding)
+                    .padding(horizontal = 20.dp)
+            ) {
+
+                item {
+                    Header()
+
+                    Spacer(Modifier.height(24.dp))
+                }
+
+                when (selectedTab) {
+
+                    0 -> {
+                        item {
+                            Text(
+                                "BEM-VINDO AO",
+                                color = Blue,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                "Nexus Launcher",
+                                color = Color.White,
+                                fontSize = 29.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+
+                            Text(
+                                "Sua aventura começa aqui.",
+                                color = Color.Gray,
+                                fontSize = 14.sp
+                            )
+
+                            Spacer(Modifier.height(24.dp))
+
+                            GamePanel(
+                                version = selectedVersion,
+                                onSelectVersion = {
+                                    showVersions = true
+                                }
+                            )
+
+                            Spacer(Modifier.height(20.dp))
+
+                            InfoPanel(
+                                Icons.Default.Person,
+                                "Perfil",
+                                "Conta ainda não conectada"
+                            )
+
+                            InfoPanel(
+                                Icons.Default.Memory,
+                                "Memória RAM",
+                                "Configuração ainda não disponível"
+                            )
+
+                            InfoPanel(
+                                Icons.Default.Gamepad,
+                                "Controles",
+                                "Personalize sua experiência"
+                            )
+                        }
+                    }
+
+                    1 -> {
+                        item {
+                            Text(
+                                "Biblioteca de versões",
+                                color = Color.White,
+                                fontSize = 25.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(Modifier.height(15.dp))
+                        }
+
+                        items(versions.size) { index ->
+                            val version = versions[index]
+
+                            InfoPanel(
+                                Icons.Default.Extension,
+                                "Minecraft $version",
+                                if (selectedVersion == version)
+                                    "Versão selecionada"
+                                else
+                                    "Selecionar versão",
+                                Modifier.clickable {
+                                    selectedVersion = version
+                                }
+                            )
+                        }
+                    }
+
+                    2 -> {
+                        item {
+                            Text(
+                                "Configurações",
+                                color = Color.White,
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(Modifier.height(15.dp))
+
+                            InfoPanel(
+                                Icons.Default.Memory,
+                                "Memória",
+                                "Configuração de RAM"
+                            )
+
+                            InfoPanel(
+                                Icons.Default.Settings,
+                                "Java Runtime",
+                                "Gerenciamento do Java"
+                            )
+
+                            InfoPanel(
+                                Icons.Default.Tune,
+                                "Resolução",
+                                "Configurações de vídeo"
+                            )
+
+                            InfoPanel(
+                                Icons.Default.Gamepad,
+                                "Controles",
+                                "Configuração dos controles"
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Spacer(Modifier.height(25.dp))
+
+                    Text(
+                        "NEXUS LAUNCHER • MOBILE",
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color.Gray,
+                        fontSize = 10.sp
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+                }
+            }
+
+            if (showVersions) {
+                AlertDialog(
+                    onDismissRequest = { showVersions = false },
+                    containerColor = SurfaceDark,
+                    title = {
+                        Text("Escolher versão", color = Color.White)
+                    },
+                    text = {
+                        Column {
+                            versions.forEach { version ->
+                                TextButton(
+                                    onClick = {
+                                        selectedVersion = version
+                                        showVersions = false
+                                    }
+                                ) {
+                                    Text(
+                                        "Minecraft $version",
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = { showVersions = false }
+                        ) {
+                            Text("Fechar", color = Green)
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun Header() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "NEXUS",
+            fontSize = 27.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 3.sp,
+            style = LocalTextStyle.current.copy(
+                brush = Brush.horizontalGradient(
+                    listOf(Blue, Purple, Green)
+                )
+            )
+        )
+
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .background(SurfaceDark, CircleShape)
+                .border(1.dp, Purple, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Default.Person,
+                contentDescription = "Perfil",
+                tint = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun GamePanel(
+    version: String,
+    onSelectVersion: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        Color(0xFF102D50),
+                        Color(0xFF321B50),
+                        Color(0xFF103D32)
+                    )
+                ),
+                RoundedCornerShape(24.dp)
+            )
+            .border(
+                1.dp,
+                Purple.copy(alpha = 0.6f),
+                RoundedCornerShape(24.dp)
+            )
+            .padding(20.dp)
+    ) {
+        Text(
+            "MINECRAFT JAVA",
+            color = Green,
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            "Prepare-se para jogar.",
+            color = Color.White,
+            fontSize = 27.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        OutlinedButton(
+            onClick = onSelectVersion,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color.White
+            )
+        ) {
+            Icon(Icons.Default.Extension, null)
+            Spacer(Modifier.width(8.dp))
+            Text("Minecraft $version")
+            Spacer(Modifier.weight(1f))
+            Icon(Icons.Default.ArrowDropDown, null)
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                // Integração do mecanismo Minecraft será adicionada depois.
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Green,
+                contentColor = Color(0xFF07140C)
+            )
+        ) {
+            Icon(Icons.Default.PlayArrow, null)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "JOGAR",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Black
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            "Interface em desenvolvimento",
+            color = Color.LightGray,
+            fontSize = 11.sp
+        )
+    }
+}
+
+@Composable
+fun InfoPanel(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .background(
+                SurfaceDark,
+                RoundedCornerShape(16.dp)
+            )
+            .padding(17.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = Blue,
+            modifier = Modifier.size(27.dp)
+        )
+
+        Spacer(Modifier.width(14.dp))
+
+        Column {
+            Text(
+                title,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                description,
+                color = Color.Gray,
+                fontSize = 12.sp
+            )
+        }
+    }
+}
